@@ -7,7 +7,7 @@ class Task:
         self.t_name = t_name
         self.status = status
         self.description = description
-        
+
 
 class ProjectBoardGUI:
     def __init__(self, parent):
@@ -87,6 +87,42 @@ class ProjectBoardGUI:
         self.confirm_task.grid(row=2) # Show
 
 ## Methods ##
+    def output_tasks_frame(self):
+        self.task_button = Button(
+            self.tasks_frame,
+            text="+",
+            command=self.switch_frame
+        )
+        self.task_button.grid(row=len(self.tasks) + 1, column=0) # Show
+
+        self.task_no_header = Label(
+            self.tasks_frame,
+            text="No.",
+            borderwidth=1, 
+            relief="solid",
+            padx=5
+        )
+        self.task_no_header.grid(row=0, column=0)
+
+        self.name_header = Label(
+            self.tasks_frame,
+            text="Task",
+            borderwidth=1, 
+            relief="solid",
+            padx=5
+        )
+        self.name_header.grid(row=0, column=1)
+
+        self.status_header = Label(
+            self.tasks_frame,
+            text="Status",
+            borderwidth=1, 
+            relief="solid",
+            padx=5
+        )
+        self.status_header.grid(row=0, column=2)
+
+
     def add_task(self):
         """
         """
@@ -97,6 +133,9 @@ class ProjectBoardGUI:
 
 
     def output_tasks(self):
+        for widget in self.tasks_frame.winfo_children():
+            widget.destroy()
+        self.output_tasks_frame()
         task_counter = 1
         for task in self.tasks:
             task_num = task_counter
@@ -121,20 +160,24 @@ class ProjectBoardGUI:
             )
             task_name_label.grid(row=task_counter, column=1)
 
-            task_status_label = Label(
+            self.current_status = StringVar()
+            self.current_status.set(temp_status)
+            task_status_menu = OptionMenu(
                 self.tasks_frame,
-                text=temp_status,
-                borderwidth=1, 
-                relief="solid",
-                padx=5
+                self.current_status,
+                *self.statuses
             )
-            task_status_label.grid(row=task_counter, column=2)
+            task_status_menu.grid(row=task_counter, column=2)
+            self.current_status.trace_add("write", lambda *args, t=task_counter: self.update_task(t - 1, *args))
             task_counter += 1
+
 
             self.task_button.grid(row=len(self.tasks) + 1, column=0)
 
 
-
+    def update_task(self,task_num, *args):
+        self.tasks[task_num].status = self.current_status.get()
+        print(self.tasks[task_num].status)
 
     def switch_frame(self):
         """
