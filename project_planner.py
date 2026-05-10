@@ -23,8 +23,6 @@ class ProjectBoardGUI:
         ]
         
     # Frames setup
-        self.current_frame = 1
-
         self.tasks_frame = Frame(parent)
         self.task_entry_frame = Frame(parent)
         
@@ -32,7 +30,7 @@ class ProjectBoardGUI:
         self.task_button = Button(
             self.tasks_frame,
             text="+",
-            command=self.switch_frame
+            command= lambda: self.switch_frame(2)
         )
         self.task_button.grid(row=len(self.tasks) + 1, column=0) # Show
 
@@ -40,30 +38,27 @@ class ProjectBoardGUI:
             self.tasks_frame,
             text="No.",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.task_no_header.grid(row=0, column=0)
+        self.task_no_header.grid(row=0, column=0, padx=5, pady=5)
 
         self.name_header = Label(
             self.tasks_frame,
             text="Task",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.name_header.grid(row=0, column=1)
+        self.name_header.grid(row=0, column=1, padx=5, pady=5)
 
         self.status_header = Label(
             self.tasks_frame,
             text="Status",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.status_header.grid(row=0, column=2)
+        self.status_header.grid(row=0, column=2, padx=5, pady=5)
         
-        self.tasks_frame.grid() # Show
+        self.tasks_frame.grid(padx=10, pady=10) # Show
 
     #### Task Entry Frame ####
         self.taskname_entry_label = Label(
@@ -91,7 +86,7 @@ class ProjectBoardGUI:
         self.task_button = Button(
             self.tasks_frame,
             text="+",
-            command=self.switch_frame
+            command= lambda: self.switch_frame(2)
         )
         self.task_button.grid(row=len(self.tasks) + 1, column=0) # Show
 
@@ -99,28 +94,27 @@ class ProjectBoardGUI:
             self.tasks_frame,
             text="No.",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.task_no_header.grid(row=0, column=0)
+        self.task_no_header.grid(row=0, column=0, padx=5, pady=5)
 
         self.name_header = Label(
             self.tasks_frame,
             text="Task",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.name_header.grid(row=0, column=1)
+        self.name_header.grid(row=0, column=1, padx=5, pady=5)
 
         self.status_header = Label(
             self.tasks_frame,
             text="Status",
             borderwidth=1, 
-            relief="solid",
-            padx=5
+            relief="solid"
         )
-        self.status_header.grid(row=0, column=2)
+        self.status_header.grid(row=0, column=2, padx=5, pady=5)
+        
+        self.tasks_frame.grid(padx=10, pady=10) # Show
 
 
     def add_task(self):
@@ -129,7 +123,7 @@ class ProjectBoardGUI:
         self.tasks.append(Task(self.task_name.get()))
         messagebox.showinfo("Task added", "Task has been succesfully added")
         self.output_tasks()
-        self.switch_frame()
+        self.switch_frame(1)
 
 
     def output_tasks(self):
@@ -146,8 +140,7 @@ class ProjectBoardGUI:
                 self.tasks_frame,
                 text=task_num,
                 borderwidth=1, 
-                relief="solid",
-                padx=5
+                relief="solid"
             )
             task_num_label.grid(row=task_counter, column=0)
 
@@ -155,8 +148,7 @@ class ProjectBoardGUI:
                 self.tasks_frame,
                 text=temp_name,
                 borderwidth=1, 
-                relief="solid",
-                padx=5
+                relief="solid"
             )
             task_name_label.grid(row=task_counter, column=1)
 
@@ -168,34 +160,43 @@ class ProjectBoardGUI:
                 *self.statuses
             )
             task_status_menu.grid(row=task_counter, column=2)
-            self.current_status.trace_add("write", lambda *args, t=task_counter: self.update_task(t - 1, *args))
+
+
+            self.remove_task_button = Button(
+                self.tasks_frame,
+                text="-",
+                command= lambda: self.remove_task(task_num - 1)
+            )
+
+            self.remove_task_button.grid(row=task_counter, column=3)
+
+            self.current_status.trace_add("write", lambda *args, t=task_counter, s=self.current_status: self.update_task(t - 1, s, *args))
             task_counter += 1
 
 
             self.task_button.grid(row=len(self.tasks) + 1, column=0)
 
+    def remove_task(self, target_task):
+        self.tasks.pop(target_task)
+        self.output_tasks()
 
-    def update_task(self,task_num, *args):
-        self.tasks[task_num].status = self.current_status.get()
+
+    def update_task(self, task_num, task_status, *args):
+        self.tasks[task_num].status = task_status.get()
         print(self.tasks[task_num].status)
 
-    def switch_frame(self):
+    def switch_frame(self, target_frame):
         """
         """
-        # Gets frame
-        frame = self.current_frame
-
-        # Checks current frame and swictches accordingly
-        if frame == 1:
+        # Checks current frame and switches accordingly
+        if target_frame == 1:
+            self.task_entry_frame.grid_forget()
+            self.tasks_frame.grid(padx=10, pady=10)
+            self.mac_frame_switch_handling(self.tasks_frame)
+        elif target_frame == 2:
             self.tasks_frame.grid_forget()
             self.task_entry_frame.grid()
             self.mac_frame_switch_handling(self.task_entry_frame)
-            self.current_frame = 2
-        elif frame == 2:
-            self.task_entry_frame.grid_forget()
-            self.tasks_frame.grid()
-            self.mac_frame_switch_handling(self.tasks_frame)
-            self.current_frame = 1
         
 
 
