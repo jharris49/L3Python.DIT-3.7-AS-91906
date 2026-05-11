@@ -3,7 +3,12 @@ from tkinter import messagebox
 
 
 class Task:
+    task_id_counter = 1
+
     def __init__(self, t_name, status="Unstarted", description=None):
+        self.task_id = Task.task_id_counter
+        Task.task_id_counter += 1
+
         self.t_name = t_name
         self.status = status
         self.description = description
@@ -11,7 +16,13 @@ class Task:
 
 class ProjectBoardGUI:
     def __init__(self, parent):
-    # Lists
+    # Lists and Arrays
+        self.status_colours = {
+            "Unstarted": "tomato",
+            "In progress": "darkorange2",
+            "Finished": "black"
+        }
+
         self.tasks = [
 
         ]
@@ -21,7 +32,13 @@ class ProjectBoardGUI:
             "In progress",
             "Finished"
         ]
-        
+
+        self.status_values = {
+            "Unstarted": 1,
+            "In progress": 2,
+            "Finished": 3
+        }
+
     # Frames setup
         self.tasks_frame = Frame(parent)
         self.task_entry_frame = Frame(parent)
@@ -37,28 +54,25 @@ class ProjectBoardGUI:
         self.task_no_header = Label(
             self.tasks_frame,
             text="No.",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.task_no_header.grid(row=0, column=0, padx=5, pady=5)
 
         self.name_header = Label(
             self.tasks_frame,
             text="Task",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.name_header.grid(row=0, column=1, padx=5, pady=5)
 
         self.status_header = Label(
             self.tasks_frame,
             text="Status",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.status_header.grid(row=0, column=2, padx=5, pady=5)
         
-        self.tasks_frame.grid(padx=10, pady=10) # Show
+        self.tasks_frame.grid(padx=20, pady=5) # Show
 
     #### Task Entry Frame ####
         self.taskname_entry_label = Label(
@@ -93,28 +107,25 @@ class ProjectBoardGUI:
         self.task_no_header = Label(
             self.tasks_frame,
             text="No.",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.task_no_header.grid(row=0, column=0, padx=5, pady=5)
 
         self.name_header = Label(
             self.tasks_frame,
             text="Task",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.name_header.grid(row=0, column=1, padx=5, pady=5)
 
         self.status_header = Label(
             self.tasks_frame,
             text="Status",
-            borderwidth=1, 
-            relief="solid"
+            font = "Helvatica 13 bold"
         )
         self.status_header.grid(row=0, column=2, padx=5, pady=5)
         
-        self.tasks_frame.grid(padx=10, pady=10) # Show
+        self.tasks_frame.grid(padx=20, pady=5) # Show
 
 
     def add_task(self):
@@ -130,25 +141,25 @@ class ProjectBoardGUI:
         for widget in self.tasks_frame.winfo_children():
             widget.destroy()
         self.output_tasks_frame()
+        self.filter_tasks()
         task_counter = 1
         for task in self.tasks:
-            task_num = task_counter
+            task_num = task.task_id
             temp_name = task.t_name
             temp_status = task.status
+            self.text_colour = self.status_colours[task.status]
 
             task_num_label =Label(
                 self.tasks_frame,
                 text=task_num,
-                borderwidth=1, 
-                relief="solid"
+                fg=self.text_colour
             )
             task_num_label.grid(row=task_counter, column=0)
 
             task_name_label = Label(
                 self.tasks_frame,
                 text=temp_name,
-                borderwidth=1, 
-                relief="solid"
+                fg=self.text_colour
             )
             task_name_label.grid(row=task_counter, column=1)
 
@@ -159,13 +170,15 @@ class ProjectBoardGUI:
                 self.current_status,
                 *self.statuses
             )
+            
+            task_status_menu.config(fg=self.text_colour)
             task_status_menu.grid(row=task_counter, column=2)
 
 
             self.remove_task_button = Button(
                 self.tasks_frame,
                 text="-",
-                command= lambda: self.remove_task(task_num - 1)
+                command=lambda id=task_num: self.remove_task(id)
             )
 
             self.remove_task_button.grid(row=task_counter, column=3)
@@ -176,22 +189,33 @@ class ProjectBoardGUI:
 
             self.task_button.grid(row=len(self.tasks) + 1, column=0)
 
+
+    def filter_tasks(self):   
+        self.tasks.sort(key=lambda a_task: (self.status_values[a_task.status], a_task.task_id))
+        #print("\n")
+        #for task in self.tasks:
+            #print(task.status)
+
+
     def remove_task(self, target_task):
-        self.tasks.pop(target_task)
-        self.output_tasks()
+        for task in self.tasks:
+            if task.task_id == target_task:
+                self.tasks.remove(task)
+                self.output_tasks()
 
 
     def update_task(self, task_num, task_status, *args):
         self.tasks[task_num].status = task_status.get()
-        print(self.tasks[task_num].status)
+        self.output_tasks()
+        #(self.tasks[task_num].status)
 
     def switch_frame(self, target_frame):
         """
         """
-        # Checks current frame and switches accordingly
+        # Checks target frame and switches accordingly
         if target_frame == 1:
             self.task_entry_frame.grid_forget()
-            self.tasks_frame.grid(padx=10, pady=10)
+            self.tasks_frame.grid(padx=20, pady=5)
             self.mac_frame_switch_handling(self.tasks_frame)
         elif target_frame == 2:
             self.tasks_frame.grid_forget()
@@ -221,6 +245,7 @@ class ProjectBoardGUI:
 if __name__ == "__main__":
     root = Tk()
     root.title("Project Board")
+    root.option_add("*Font", "Helvetica 13")
     app = ProjectBoardGUI(root)
     root.mainloop()
     
