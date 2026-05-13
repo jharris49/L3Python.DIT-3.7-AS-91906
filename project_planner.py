@@ -119,10 +119,10 @@ class ProjectBoardGUI:
         self.format_label1.grid(row=1, column=1)
         self.format_label2.grid(row=1, column=3)
 
-        current_date = datetime.datetime.now()
+        self.current_date = datetime.datetime.now()
 
         self.task_deadline_day = StringVar()
-        self.task_deadline_day.set(current_date.strftime("%d"))
+        self.task_deadline_day.set(self.current_date.strftime("%d"))
         self.deadline_day_entry = Spinbox(
             self.task_deadline_frame,
             textvariable=self.task_deadline_day,
@@ -133,7 +133,7 @@ class ProjectBoardGUI:
         self.deadline_day_entry.grid(row=1, column=0)
 
         self.task_deadline_month = StringVar()
-        self.task_deadline_month.set(current_date.strftime("%m"))
+        self.task_deadline_month.set(self.current_date.strftime("%m"))
         self.deadline_month_entry = Spinbox(
             self.task_deadline_frame,
             textvariable=self.task_deadline_month,
@@ -144,7 +144,7 @@ class ProjectBoardGUI:
         self.deadline_month_entry.grid(row=1, column=2)
 
         self.task_deadline_year = StringVar()
-        self.task_deadline_year.set(current_date.strftime("%Y"))
+        self.task_deadline_year.set(self.current_date.strftime("%Y"))
         self.deadline_year_entry = Entry(
             self.task_deadline_frame,
             textvariable=self.task_deadline_year,
@@ -152,11 +152,6 @@ class ProjectBoardGUI:
         )
         self.deadline_year_entry.grid(row=1, column=4)
         self.task_deadline_frame.grid(row=1, column=1, sticky="w")
-
-        deadline_day = int(self.task_deadline_day.get())
-        deadline_month = int(self.task_deadline_month.get())
-        deadline_year = int(self.task_deadline_year.get())
-        self.saveable_date = datetime.datetime(deadline_year, deadline_month, deadline_day)
 
         self.confirm_task = Button(
             self.task_entry_frame,
@@ -166,6 +161,37 @@ class ProjectBoardGUI:
         self.confirm_task.grid(row=2) # Show
 
 ## Methods ##
+    def check_task_name(self):
+        if self.taskname_entry.get().strip() == "":
+            messagebox.showerror("Task Name Empty", "Task name is empty, name your task to add it.")
+            self.taskname_entry.focus_set()
+            return False
+        return True
+
+    def check_deadline(self, entry_widgets):
+        for entry in entry_widgets:
+            specific_entry = entry.get().strip()
+            if specific_entry == "":
+                messagebox.showerror("Deadline Empty", "One part of the deadline is left empty, fill it to add the task.")
+                entry.focus_set()
+                return False
+            if not specific_entry.isdigit():
+                messagebox.showerror("Invalid Character", "One part of the deadline contains an invalid character, remove it to add task.")
+                entry.focus_set()
+                return False
+        try:
+            if len(self.task_deadline_day.get()) == 1:
+                self.task_deadline_day.set("0" + str(self.task_deadline_day.get()))
+            if len(self.task_deadline_month.get()) == 1:
+                self.task_deadline_month.set("0" + str(self.task_deadline_month.get()))
+            deadline_string = f"{self.task_deadline_year.get()}-{self.task_deadline_month.get()}-{self.task_deadline_day.get()}"
+            datetime.datetime.strptime(deadline_string, "%Y-%m-%d")
+        except:
+            messagebox.showerror("Invalid date", "The deadline date does not exist, fix it to add the task.")
+            return False
+        return True
+
+
     def output_tasks_frame(self):
         self.task_button = Button(
             self.tasks_frame,
@@ -208,11 +234,19 @@ class ProjectBoardGUI:
     def add_task(self):
         """
         """
-        self.tasks.append(Task(self.task_name.get(), self.saveable_date))
-        messagebox.showinfo("Task added", "Task has been succesfully added")
-        self.output_tasks()
-        self.switch_frame(1)
-
+        if self.check_deadline([self.deadline_day_entry, self.deadline_month_entry, self.deadline_year_entry]) and self.check_task_name():
+            deadline_day = int(self.task_deadline_day.get())
+            deadline_month = int(self.task_deadline_month.get())
+            deadline_year = int(self.task_deadline_year.get())
+            self.saveable_date = datetime.datetime(deadline_year, deadline_month, deadline_day)
+            self.tasks.append(Task(self.task_name.get(), self.saveable_date))
+            messagebox.showinfo("Task added", "Task has been succesfully added")
+            self.task_name.set("")
+            self.task_deadline_day.set(self.current_date.strftime("%d"))
+            self.task_deadline_month.set(self.current_date.strftime("%m"))
+            self.task_deadline_year.set(self.current_date.strftime("%Y"))
+            self.output_tasks()
+            self.switch_frame(1)
 
     def output_tasks(self):
         for widget in self.tasks_frame.winfo_children():
