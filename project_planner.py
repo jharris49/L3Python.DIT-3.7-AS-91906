@@ -160,6 +160,14 @@ class ProjectBoardGUI:
             command=self.add_task
        )
         self.confirm_task.grid(row=2, pady=5) # Show
+            
+        back_button = Button(
+            self.task_entry_frame,
+            text="Back",
+            command=lambda: self.switch_frame(1)
+        )
+
+        back_button.grid(row=2, column=1, sticky="e", padx=5)
 
 
 ## Methods ##
@@ -209,7 +217,7 @@ class ProjectBoardGUI:
             self.edit_task_frame,
             textvariable=self.current_name
         )
-        self.taskname_edit.grid(row=0, column=1, pady=5) # Show
+        self.taskname_edit.grid(row=0, column=1, pady=5, padx=5) # Show
 
         self.deadline_edit_label = Label(
             self.edit_task_frame,
@@ -267,7 +275,16 @@ class ProjectBoardGUI:
             text="Save",
             command=lambda: self.edit_task(wanted_task)
        )
-        self.edit_task_button.grid(row=2, pady=5) # Show
+        self.edit_task_button.grid(row=2, column=0, pady=5) # Show
+
+        back_button = Button(
+            self.edit_task_frame,
+            text="Back",
+            command=lambda: self.switch_frame(1)
+        )
+
+        back_button.grid(row=2, column=1, sticky="e", padx=5)
+
 
 
     def output_tasks_frame(self):
@@ -319,10 +336,7 @@ class ProjectBoardGUI:
             saveable_date = datetime.datetime(deadline_year, deadline_month, deadline_day)
             self.tasks.append(Task(self.task_name.get(), saveable_date))
             messagebox.showinfo("Task Added", "Task has been succesfully added")
-            self.task_name.set("")
-            self.task_deadline_day.set(self.current_date.strftime("%d"))
-            self.task_deadline_month.set(self.current_date.strftime("%m"))
-            self.task_deadline_year.set(self.current_date.strftime("%Y"))
+            self.clear_entries()
             self.output_tasks()
             self.switch_frame(1)
 
@@ -344,6 +358,7 @@ class ProjectBoardGUI:
             self.current_deadline_year.set(self.current_date.strftime("%Y"))
             self.output_tasks()
             self.switch_frame(1)
+
 
     def output_tasks(self):
         for widget in self.tasks_frame.winfo_children():
@@ -414,17 +429,27 @@ class ProjectBoardGUI:
 
 
     def filter_tasks(self):   
-        self.tasks.sort(key=lambda a_task: (self.status_values[a_task.status], a_task.task_id))
+        self.tasks.sort(key=lambda a_task: (self.status_values[a_task.status], a_task.t_deadline, a_task.task_id))
         #print("\n")
         #for task in self.tasks:
             #print(task.status)
 
 
     def remove_task(self, target_task):
-        for task in self.tasks:
-            if task.task_id == target_task:
-                self.tasks.remove(task)
-                self.output_tasks()
+        confirmation = messagebox.askyesno("Remove Task", "Are you sure you want to remove this task?")
+        if confirmation:
+            for task in self.tasks:
+                if task.task_id == target_task:
+                    self.tasks.remove(task)
+                    self.output_tasks()
+        else:
+            return
+
+    def clear_entries(self):
+            self.task_name.set("")
+            self.task_deadline_day.set(self.current_date.strftime("%d"))
+            self.task_deadline_month.set(self.current_date.strftime("%m"))
+            self.task_deadline_year.set(self.current_date.strftime("%Y"))
 
 
     def update_task(self, task_num, task_status, *args):
@@ -438,6 +463,7 @@ class ProjectBoardGUI:
         # Checks target frame and switches accordingly
         if target_frame == 1:
             self.task_entry_frame.grid_forget()
+            self.clear_entries()
             self.edit_task_frame.grid_forget()
             self.tasks_frame.grid(padx=20, pady=5)
             self.mac_frame_switch_handling(self.tasks_frame)
