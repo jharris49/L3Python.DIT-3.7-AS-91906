@@ -290,6 +290,7 @@ class ProjectBoardGUI:
             return False
         return True
 
+
     def output_edit_task_frame(self, wanted_task):
         """Output edit task frame.
 
@@ -302,6 +303,10 @@ class ProjectBoardGUI:
         wanted_task (int) -- the task id of the task 
         that the user wants to edit.
         """
+        # Clears all widgets in frame.
+        for widget in self.edit_task_frame.winfo_children():
+            widget.destroy()
+        self.task_deadline_edit_frame = Frame(self.edit_task_frame)
         self.switch_frame(3)
         for task in self.tasks:
             if task.task_id == wanted_task:
@@ -389,7 +394,7 @@ class ProjectBoardGUI:
             text="Save",
             command=lambda: self.edit_task(wanted_task)
        )
-        self.edit_task_button.grid(row=2, column=0, pady=5) # Show
+        self.edit_task_button.grid(row=2, column=0, pady=5)
 
         # Returns to previous state when clicked.
         back_button = Button(
@@ -399,7 +404,6 @@ class ProjectBoardGUI:
         )
 
         back_button.grid(row=2, column=1, sticky="e", padx=5)
-
 
 
     def output_tasks_frame(self):
@@ -415,7 +419,7 @@ class ProjectBoardGUI:
             text="+",
             command=lambda: self.switch_frame(2)
         )
-        self.task_button.grid(row=len(self.tasks) + 1, column=0) # Show
+        self.task_button.grid(row=len(self.tasks) + 1, column=0)
 
     # Headers #
         self.task_no_header = Label(
@@ -471,16 +475,16 @@ class ProjectBoardGUI:
 
 
     def edit_task(self, target_edit):
-         """Edit task object.
+        """Edit task object.
 
-         This method calls the input validation methods
-         and edits the target task based on the bool they
-         return.
+        This method calls the input validation methods
+        and edits the target task based on the bool they
+        return.
 
-         Parameters:
-         target_edit (int) -- the task id of the task that the user wants to edit.
-         """
-         if self.check_deadline([self.deadline_day_edit, self.deadline_month_edit, self.deadline_year_edit],
+        Parameters:
+        target_edit (int) -- the task id of the task that the user wants to edit.
+        """
+        if self.check_deadline([self.deadline_day_edit, self.deadline_month_edit, self.deadline_year_edit],
                                 [self.current_deadline_day, self.current_deadline_month, self.current_deadline_year]) and self.check_task_name(self.taskname_edit):
             deadline_day = int(self.current_deadline_day.get())
             deadline_month = int(self.current_deadline_month.get())
@@ -595,7 +599,6 @@ class ProjectBoardGUI:
                                             a_task.t_deadline, a_task.task_id))
 
 
-
     def remove_task(self, target_task):
         """Remove target task.
 
@@ -614,6 +617,7 @@ class ProjectBoardGUI:
                     self.output_tasks()
         else:
             return
+
 
     def clear_entries(self):
         """Clear entry vars.
